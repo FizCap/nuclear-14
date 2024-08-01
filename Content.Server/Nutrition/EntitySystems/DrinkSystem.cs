@@ -1,7 +1,7 @@
 using Content.Server.Body.Components;
 using Content.Server.Body.Systems;
 using Content.Server.Chemistry.Containers.EntitySystems;
-using Content.Server.Chemistry.ReagentEffects;
+using Content.Server.EntityEffects.Effects;
 using Content.Server.Fluids.EntitySystems;
 using Content.Server.Forensics;
 using Content.Server.Inventory;
@@ -17,7 +17,7 @@ using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Chemistry.Reagent;
 using Content.Shared.Database;
 using Content.Shared.DoAfter;
-using Content.Shared.Examine;
+using Content.Shared.EntityEffects;
 using Content.Shared.FixedPoint;
 using Content.Shared.IdentityManagement;
 using Content.Shared.Interaction;
@@ -38,7 +38,7 @@ using Robust.Shared.Utility;
 
 namespace Content.Server.Nutrition.EntitySystems;
 
-public sealed class DrinkSystem : EntitySystem
+public sealed class DrinkSystem : SharedDrinkSystem
 {
     [Dependency] private readonly BodySystem _body = default!;
     [Dependency] private readonly FlavorProfileSystem _flavorProfile = default!;
@@ -69,7 +69,7 @@ public sealed class DrinkSystem : EntitySystem
         SubscribeLocalEvent<DrinkComponent, ComponentInit>(OnDrinkInit);
         // run before inventory so for bucket it always tries to drink before equipping (when empty)
         // run after openable so its always open -> drink
-        SubscribeLocalEvent<DrinkComponent, UseInHandEvent>(OnUse, before: new[] { typeof(ServerInventorySystem) }, after: new[] { typeof(OpenableSystem) });
+        SubscribeLocalEvent<DrinkComponent, UseInHandEvent>(OnUse, before: [typeof(ServerInventorySystem)], after: [typeof(OpenableSystem)]);
         SubscribeLocalEvent<DrinkComponent, AfterInteractEvent>(AfterInteract);
         SubscribeLocalEvent<DrinkComponent, GetVerbsEvent<AlternativeVerb>>(AddDrinkVerb);
         // put drink amount after opened
@@ -287,7 +287,7 @@ public sealed class DrinkSystem : EntitySystem
             target: target,
             used: item)
         {
-            BreakOnUserMove = forceDrink,
+            BreakOnMove = forceDrink,
             BreakOnDamage = true,
             BreakOnTargetMove = forceDrink,
             MovementThreshold = 0.01f,
